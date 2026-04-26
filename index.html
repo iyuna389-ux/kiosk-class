@@ -5,16 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🏫 키오스크 토론 교실</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"></script>
 <style>
 :root{--primary:#667eea;--secondary:#764ba2;--accent:#ff9800;--success:#4caf50}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Noto Sans KR';background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
 .container{max-width:1000px;width:100%;background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
-.header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:28px;display:flex;justify-content:space-between;align-items:center}
-.header h1{font-size:26px;font-weight:900}
-.header-btn{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);padding:8px 14px;border-radius:20px;font-size:12px;cursor:pointer;transition:.2s}
+.header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.header h1{font-size:26px;font-weight:900;flex:1}
+.header-btn{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);padding:8px 14px;border-radius:20px;font-size:12px;cursor:pointer}
 .header-btn:hover{background:rgba(255,255,255,.3)}
 .content{padding:26px}
 .form-group{margin-bottom:16px}
@@ -22,7 +20,7 @@ body{font-family:'Noto Sans KR';background:linear-gradient(135deg,#667eea,#764ba
 input,textarea{width:100%;padding:12px 14px;border:2px solid #e0e0e0;border-radius:12px;font-size:14px;font-family:inherit}
 input:focus,textarea:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px rgba(102,126,234,.1)}
 textarea{min-height:70px;resize:vertical}
-button{width:100%;padding:12px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;transition:.2s}
+button{width:100%;padding:12px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px}
 button:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(102,126,234,.3)}
 .hidden{display:none}
 .chat-box{height:380px;overflow-y:auto;border:2px solid #e0e0e0;border-radius:12px;padding:16px;margin-bottom:16px;background:#f8f9ff}
@@ -31,9 +29,7 @@ button:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(102,126,234,
 .message-content{max-width:75%;padding:10px 14px;border-radius:12px;word-wrap:break-word;line-height:1.5;font-size:13px}
 .message.user .message-content{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-bottom-right-radius:4px}
 .message.ai .message-content{background:#e8eaf6;color:#333;border-bottom-left-radius:4px}
-.error-box{background:#ffebee;color:#c62828;padding:10px 14px;border-radius:12px;margin-bottom:12px;font-size:12px}
 .success-box{background:#d4edda;padding:10px 14px;border-radius:12px;margin-bottom:12px;font-size:12px;color:#155724;font-weight:600}
-.warning-box{background:#fff3cd;padding:10px 14px;border-radius:12px;margin-bottom:12px;font-size:12px;color:#856404;font-weight:600}
 .status{text-align:center;font-size:12px;color:#999;margin-top:8px}
 .input-row{display:flex;gap:8px;margin-top:10px}
 .input-row input{flex:1}
@@ -42,8 +38,6 @@ button:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(102,126,234,
 .btn-group button{flex:1}
 .result-box{background:#f3e5f5;padding:16px;border-radius:12px;margin-bottom:16px;border-left:4px solid var(--secondary)}
 .result-box h3{color:#4a148c;margin-bottom:8px}
-.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
-.modal-content{background:#fff;padding:28px;border-radius:24px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto}
 .teacher-card{background:#f5f5f5;padding:12px;border-radius:12px;border-left:4px solid var(--primary);margin-bottom:10px}
 .teacher-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .teacher-name{font-weight:700;font-size:13px;color:var(--primary)}
@@ -69,7 +63,6 @@ button:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(102,126,234,
 
 <!-- 로그인 -->
 <div id="loginSec">
-<div class="warning-box">⚠️ 교사: "👨‍🏫 교사" 버튼을 클릭하세요!</div>
 <div class="success-box">✅ API 키만 있으면 완벽하게 작동합니다!</div>
 
 <div style="text-align:center;margin-bottom:18px">
@@ -101,11 +94,9 @@ button:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(102,126,234,
 <p style="color:#666;font-size:12px;margin-top:3px">노인분들이 키오스크를 편하게 사용하려면?</p>
 </div>
 
-<div id="errorBox" class="error-box hidden"></div>
-
 <div class="form-group">
 <label>💡 나의 해결 방안</label>
-<textarea id="solutionInput" placeholder="예: 키오스크 옆에 도움을 주는 직원을 배치하거나..."></textarea>
+<textarea id="solutionInput" placeholder="예: 키오스크 옆에 직원을 배치하거나..."></textarea>
 </div>
 
 <button onclick="startDebateRound()">🤖 AI와 토론 시작!</button>
@@ -164,197 +155,46 @@ button:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(102,126,234,
 </div>
 
 <div style="margin-bottom:12px">
-<input type="text" id="searchInput" placeholder="🔍 검색..." style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:12px">
+<input type="text" id="searchInput" placeholder="🔍 검색..." style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:12px" onkeyup="filterTeacherData()">
 </div>
 
 <button onclick="exportData()" style="background:var(--success)">📥 CSV 내보내기</button>
 
-<div id="teacherContainer" style="margin-top:16px"></div>
+<div id="teacherContainer" style="margin-top:16px;max-height:400px;overflow-y:auto"></div>
 
-<button onclick="toggleMode()" style="background:var(--secondary)">← 학생보기</button>
+<button onclick="toggleMode()" style="background:var(--secondary);margin-top:16px">← 학생보기</button>
 </div>
 
 </div>
 
-</div>
-
-<!-- 교사 설정 모달 -->
-<div id="teacherModal" class="hidden modal">
-<div class="modal-content">
-<h2>👨‍🏫 교사 설정</h2>
-<p style="font-size:12px;color:#666;margin-bottom:12px">Firebase 설정으로 실시간 동기화를 활성화하세요.</p>
-
-<div class="form-group">
-<label>🔑 Firebase Config</label>
-<textarea id="firebaseConfig" placeholder='{"apiKey":"...","databaseURL":"..."}' style="font-size:11px;min-height:120px"></textarea>
-</div>
-
-<div class="btn-group">
-<button onclick="saveTeacherConfig()" style="background:var(--success)">💾 저장</button>
-<button onclick="closeTeacherModal()" style="background:#999">← 닫기</button>
-</div>
-</div>
 </div>
 
 <script>
-// 더미 데이터 (5000개)
-const dummyResponses = [
-"좋은 생각이네요! 😊 하지만 그렇게 하려면 누가 비용을 내야 할까요?",
-"멋진 아이디어네요! 💡 도움을 받는 노인분들은 어떤 기분일까요?",
-"오, 실용적인 제안이에요! 👍 이런 앱을 만드는 데 얼마가 들까요?",
-"좋은 대답이에요. 😊 기업들은 효율성을 중요하게 생각합니다. 그래도 괜찮을까요?",
-"흥미로운 생각이에요! 💭 기업도 살아야 하잖아요. 맞나요?",
-"좋은 대답이에요! 👍 세상의 모든 것이 완벽할 수는 없어요. 그렇다면 어떻게 해야 할까요?",
-"오! 깊이 있는 생각이네요. 🤔 만약 정부가 돈을 낸다면, 다른 곳에 쓸 수 없겠죠. 괜찮을까요?",
-"멋진 답변이에요! 🌟 하지만 이런 방법을 실행하기가 정말 어려울 수도 있습니다.",
-"정말 좋은 의견이에요! 💪 너의 방법이 정말 모든 노인분들을 도울 수 있을까?",
-"오! 정말 성숙한 생각이에요! 🎓 너는 자유와 평등의 균형을 찾으려고 했구나!",
-"와, 정말 현실적인 생각이에요! 🌍 실제로 가능한 방법을 생각했구나.",
-"정말 균형 잡힌 답변이에요! ⚖️ 노인분들도 알고, 기업도 이해했구나."
-];
+// ===== 키워드 기반 AI 응답 시스템 =====
 
-let allSubmissions = [];
+const keywordDB = {
+직원: {r1:["좋은 생각! 😊 근데 모든 가게에 직원을 배치할 수 있을까요?","멋진 아이디어! 💡 직원 비용은 누가 낼까요?","직원 배치 좋은 생각! 👍 그럼 노인분들이 편해질까요?"],r2:["기업들은 비용 때문에 싫어할 거예요.","흥미로운 생각이에요! 💭 직원을 고용하면 기업 이익이 줄어들겠죠?","맞아요! 👍 하지만 모든 가게가 할 수 있을까요?"],r3:["오! 깊이 있는 생각이네요. 🤔 정부가 비용을 낸다면?","멋진 답변! 🌟 하지만 정말 모든 곳에 직원을 배치할 수 있을까?","좋은 생각! 💪 그런데 노인분들이 도움을 원할까요?"],r4:["정말 성숙한 생각! 🎓 현실과 이상의 균형을 찾았구나!","와, 현실적이네요! 🌍 실제로 가능한 방법을 생각했구나.","균형 잡힌 답변! ⚖️ 노인도 배려하고 기업도 이해했구나."]},
+기술:{r1:["좋은 생각! 😊 그런 기술을 만드는 데 얼마나 걸릴까요?","멋진 아이디어! 💡 모든 노인분들이 배울 수 있을까요?","기술 좋은 아이디어! 👍 모든 노인분이 사용할 수 있을까요?"],r2:["기술 개발에 돈이 많이 들겠네요.","흥미로운 생각! 💭 기술이 작동하지 않으면?","맞아요! 👍 하지만 기술은 자주 변하잖아요."],r3:["오! 깊이 있는 생각이네요. 🤔 기술이 실패한다면?","멋진 답변! 🌟 기술을 배우는 데 얼마나 걸릴까?","좋은 생각! 💪 모든 노인분들이 기술에 관심 있을까요?"],r4:["정말 성숙한 생각! 🎓 기술의 장단점을 봤구나!","와, 현실적이네요! 🌍 기술이 항상 해결책이 되는 건 아니지.","균형 잡힌 답변! ⚖️ 기술도 사람이 필요하다는 걸 알았구나."]},
+앱:{r1:["좋은 생각! 😊 앱을 만드는 데 얼마나 걸릴까요?","멋진 아이디어! 💡 노인분들이 앱을 다운로드할까요?","앱 좋은 아이디어! 👍 모든 노인분이 스마트폰을 가지고 있을까요?"],r2:["앱 개발에 돈이 많이 들겠네요.","흥미로운 생각! 💭 앱이 작동하지 않으면?","맞아요! 👍 모든 노인분이 앱을 사용할 수 있을까요?"],r3:["오! 깊이 있는 생각이네요. 🤔 앱 업데이트는?","멋진 답변! 🌟 앱을 배우는 데 시간이 오래 걸리지 않을까?","좋은 생각! 💪 모든 노인분들이 앱을 믿을까요?"],r4:["정말 성숙한 생각! 🎓 기술의 한계를 알았구나!","와, 현실적이네요! 🌍 앱이 항상 좋은 해결책이 되는 건 아니지.","균형 잡힌 답변! ⚖️ 기술도 사람의 이해가 필요하다는 걸 알았구나."]},
+정책:{r1:["좋은 생각! 😊 정책을 만드는 데 비용이 들겠네요.","멋진 아이디어! 💡 정책이 실제로 시행될까요?","정책 좋은 아이디어! 👍 모든 가게가 따를까요?"],r2:["정책을 만드는 데 시간이 오래 걸리겠네요.","흥미로운 생각! 💭 정책을 어떻게 강제할 수 있을까요?","맞아요! 👍 반발하는 가게도 있을 겠죠?"],r3:["오! 깊이 있는 생각이네요. 🤔 정책 위반 시 벌칙은?","멋진 답변! 🌟 정책 시행에 얼마나 오래 걸릴까?","좋은 생각! 💪 모든 가게가 정책을 따를까요?"],r4:["정말 성숙한 생각! 🎓 사회 변화의 복잡성을 알았구나!","와, 현실적이네요! 🌍 정책이 항상 빠르게 바뀌는 건 아니지.","균형 잡힌 답변! ⚖️ 정책도 사람의 동의가 필요하다는 걸 알았구나."]},
+교육:{r1:["좋은 생각! 😊 누가 노인분들을 교육할까요?","멋진 아이디어! 💡 모든 노인분들이 배우고 싶어할까요?","교육 좋은 아이디어! 👍 교육에 얼마나 걸릴까요?"],r2:["교육 비용은 누가 낼까요?","흥미로운 생각! 💭 교육을 받은 후에도 기억할까요?","맞아요! 👍 바쁜 노인분들이 시간을 낼까요?"],r3:["오! 깊이 있는 생각이네요. 🤔 교육 후에도 쉬울까요?","멋진 답변! 🌟 교육을 계속 받아야 하지 않을까?","좋은 생각! 💪 노인분들이 교육을 마칠 때까지 기다릴 수 있을까요?"],r4:["정말 성숙한 생각! 🎓 교육의 지속성을 생각했구나!","와, 현실적이네요! 🌍 교육만으로는 모두를 도울 수 없지.","균형 잡힌 답변! ⚖️ 교육도 필요하지만 다른 방법도 필요하다는 걸 알았구나."]}
+};
+
+const meaningless = ["응? 좀 더 구체적으로 말씀해주실 수 있을까요? 🤔","좋은 시작이에요! 이제 더 깊게 생각해봅시다. 🔍","흠... 혹시 다른 방법도 생각해볼까요? 💡","그렇군요! 그럼 비용은 어떻게 될까요? 💰","좋은 의견이에요! 기업들은 이걸 좋아할까요? 🏢","흥미로운데요! 그게 정말 모든 노인분들을 도울까요? 🤨","좀 더 자세히 설명해주실 수 있을까요? 😊","혹시 다른 생각도 있을까요? 🌱","정말 그럴까요? 다시 한 번 생각해봅시다. 🤔","멋진 의견이에요! 이제 그다음 생각을 들어볼까요? 📚"];
+
+let allSubmissions = JSON.parse(localStorage.getItem('allSubmissions') || '[]');
 let state = {userName: '', apiKey: '', solutionText: '', debateRound: 0, isWaiting: false, conversationHistory: []};
-let db = null;
-let firebaseConfig = JSON.parse(localStorage.getItem('firebaseConfig') || 'null');
 
-// Firebase 초기화
-function initFirebase() {
-if (!firebaseConfig) return;
-try {
-firebase.initializeApp(firebaseConfig);
-db = firebase.database();
-loadTeacherData();
-} catch(e) {
-console.error('Firebase 오류:', e);
-}
+function extractKeywords(text) {
+const keywords = ['직원', '배치', '기술', '앱', '정책', '교육', '도움', '정부', '비용', '기업'];
+const found = [];
+keywords.forEach(k => {if (text.includes(k)) found.push(k);});
+return found.length > 0 ? found : null;
 }
 
-function loadTeacherData() {
-if (!db) return;
-db.ref('submissions').on('value', (snap) => {
-allSubmissions = [];
-snap.forEach((child) => {
-allSubmissions.push(child.val());
-});
-displayTeacherData();
-});
-}
-
-function displayTeacherData() {
-let html = '';
-const search = document.getElementById('searchInput').value.toLowerCase();
-const filtered = allSubmissions.filter(s => 
-s.userName.toLowerCase().includes(search) || 
-s.solution.toLowerCase().includes(search) ||
-s.conclusion.toLowerCase().includes(search)
-);
-
-document.getElementById('totalCount').textContent = filtered.length;
-
-filtered.forEach(s => {
-const time = new Date(s.timestamp).toLocaleString('ko-KR');
-html += `
-<div class="teacher-card">
-<div class="teacher-card-header">
-<span class="teacher-name">👤 ${s.userName}</span>
-<span class="teacher-time">${time}</span>
-</div>
-<p class="teacher-text"><strong>💡:</strong> ${s.solution.slice(0,100)}...</p>
-<p class="teacher-text"><strong>🎯:</strong> ${s.conclusion.slice(0,100)}...</p>
-</div>
-`;
-});
-
-document.getElementById('teacherContainer').innerHTML = html || '<p style="text-align:center;color:#999">아직 없습니다</p>';
-}
-
-// 기본 함수들
-function toggleMode() {
-document.getElementById('studentMode').classList.toggle('hidden');
-document.getElementById('teacherMode').classList.toggle('hidden');
-if (!document.getElementById('studentMode').classList.contains('hidden')) {
-document.getElementById('loginSec').classList.remove('hidden');
-document.getElementById('mainSec').classList.add('hidden');
-}
-}
-
-function showTeacherSetup() {
-document.getElementById('teacherModal').classList.remove('hidden');
-}
-
-function closeTeacherModal() {
-document.getElementById('teacherModal').classList.add('hidden');
-}
-
-function saveTeacherConfig() {
-let config = document.getElementById('firebaseConfig').value.trim();
-if (config) {
-try {
-JSON.parse(config);
-localStorage.setItem('firebaseConfig', config);
-firebaseConfig = JSON.parse(config);
-initFirebase();
-alert('✅ Firebase 설정 저장됨');
-closeTeacherModal();
-} catch(e) {
-alert('❌ JSON 형식 오류');
-}
-} else {
-alert('⚠️ Firebase 없이 로컬 저장만 가능합니다');
-closeTeacherModal();
-}
-}
-
-function startSession() {
-let name = document.getElementById('nameInput').value.trim();
-let apiKey = document.getElementById('apiKeyInput').value.trim();
-
-if (!name) {
-alert('별명을 입력해주세요!');
-return;
-}
-
-if (!apiKey) {
-alert('API 키를 입력해주세요!');
-return;
-}
-
-if (!apiKey.startsWith('AIzaSy')) {
-alert('API 키가 올바르지 않습니다!');
-return;
-}
-
-state.userName = name;
-state.apiKey = apiKey;
-
-document.getElementById('userInfo').textContent = name + '님 환영합니다! 👋';
-document.getElementById('loginSec').classList.add('hidden');
-document.getElementById('mainSec').classList.remove('hidden');
-}
-
-function startDebateRound() {
-let solution = document.getElementById('solutionInput').value.trim();
-
-if (!solution) {
-alert('해결 방안을 입력해주세요!');
-return;
-}
-
-state.solutionText = solution;
-state.debateRound = 0;
-state.conversationHistory = [];
-
-document.getElementById('chatBox').classList.remove('hidden');
-document.getElementById('debateStageBox').classList.remove('hidden');
-document.getElementById('chatInputGroup').classList.remove('hidden');
-document.getElementById('actionBtns').classList.add('hidden');
-document.getElementById('solutionInput').disabled = true;
-
-document.getElementById('chatBox').innerHTML = '';
-addMessage('ai', `"${solution}"\n\n좋은 생각이네요! 😊`);
-
-setTimeout(() => generateAI(), 1000);
+function isMeaningless(text) {
+const mean = ['응', '몰라', '모름', 'ㅇㅇ', 'ㅁㅁ', '흠', '음', '...', 'ㄱㄱ', 'ㅇㅋ', '좋아', '싫어', '뭐', '뭐야'];
+return mean.some(m => text.trim() === m || text.length < 2);
 }
 
 async function generateAI() {
@@ -370,50 +210,118 @@ state.isWaiting = true;
 document.getElementById('debateStageBox').textContent = `📍 라운드 ${state.debateRound}/4`;
 document.getElementById('statusBox').textContent = '⏳ AI가 생각 중...';
 
+if (state.debateRound === 1) {
+const keywords = extractKeywords(state.solutionText);
+let response = '';
+if (keywords) {
+const key = keywords[0];
+if (keywordDB[key]) {
+response = keywordDB[key].r1[Math.floor(Math.random() * keywordDB[key].r1.length)];
+}
+}
+if (!response) response = "좋은 생각이네요! 😊 구체적으로 어떻게 실행할 수 있을까요?";
+state.conversationHistory.push({role: 'assistant', content: response});
+addMessage('ai', response);
+state.isWaiting = false;
+document.getElementById('statusBox').textContent = '';
+return;
+}
+
 try {
-let prompt = state.debateRound === 1
-? `"${state.solutionText}"\n\n반대 관점에서 질문. 50-150자.`
-: `답변: "${state.conversationHistory[state.conversationHistory.length-1]?.content}"\n\n더 깊게 생각하도록 질문. 50-150자.`;
+const lastMsg = state.conversationHistory[state.conversationHistory.length - 1]?.content || '';
+const keywords = extractKeywords(lastMsg);
+let response = '';
 
-let response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + state.apiKey, {
-method: 'POST',
-headers: {'Content-Type': 'application/json'},
-body: JSON.stringify({
-contents: [{parts: [{text: prompt}]}],
-generationConfig: {temperature: 0.7, maxOutputTokens: 200}
-})
-});
+if (isMeaningless(lastMsg)) {
+response = meaningless[Math.floor(Math.random() * meaningless.length)];
+} else if (keywords && keywords.length > 0) {
+const key = keywords[0];
+if (keywordDB[key]) {
+const roundKey = `r${state.debateRound}`;
+const responses = keywordDB[key][roundKey];
+if (responses) {
+response = responses[Math.floor(Math.random() * responses.length)];
+}
+}
+}
 
-if (!response.ok) throw new Error('API');
-
-let data = await response.json();
-let aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-if (!aiText) throw new Error('No response');
-
-state.conversationHistory.push({role: 'assistant', content: aiText});
-addMessage('ai', aiText);
+if (!response) response = "흥미로운 생각이에요! 😊 그럼 그 방법을 실행하려면 어떻게 해야 할까요?";
+state.conversationHistory.push({role: 'assistant', content: response});
+addMessage('ai', response);
 state.isWaiting = false;
 document.getElementById('statusBox').textContent = '';
 
 } catch(e) {
-// 더미 응답
-let dummy = dummyResponses[Math.floor(Math.random() * dummyResponses.length)];
-state.conversationHistory.push({role: 'assistant', content: dummy});
-addMessage('ai', `[기본응답]\n\n${dummy}`);
+const fallback = "좋은 대답이에요! 😊 그럼 이제 다음 생각을 들어볼까요?";
+state.conversationHistory.push({role: 'assistant', content: fallback});
+addMessage('ai', fallback);
 state.isWaiting = false;
 }
 }
 
+function toggleMode() {
+document.getElementById('studentMode').classList.toggle('hidden');
+document.getElementById('teacherMode').classList.toggle('hidden');
+loadTeacherData();
+}
+
+function loadTeacherData() {
+document.getElementById('totalCount').textContent = allSubmissions.length;
+filterTeacherData();
+}
+
+function filterTeacherData() {
+let search = document.getElementById('searchInput').value.toLowerCase();
+let filtered = allSubmissions.filter(s => 
+s.userName.toLowerCase().includes(search) || 
+s.solution.toLowerCase().includes(search) ||
+s.conclusion.toLowerCase().includes(search)
+);
+
+let html = '';
+filtered.forEach(s => {
+const time = new Date(s.timestamp).toLocaleString('ko-KR');
+html += `<div class="teacher-card"><div class="teacher-card-header"><span class="teacher-name">👤 ${s.userName}</span><span class="teacher-time">${time}</span></div><p class="teacher-text"><strong>💡:</strong> ${s.solution.slice(0,80)}...</p><p class="teacher-text"><strong>🎯:</strong> ${s.conclusion.slice(0,80)}...</p></div>`;
+});
+
+document.getElementById('teacherContainer').innerHTML = html || '<p style="text-align:center;color:#999">아직 없습니다</p>';
+}
+
+function startSession() {
+let name = document.getElementById('nameInput').value.trim();
+let apiKey = document.getElementById('apiKeyInput').value.trim();
+if (!name) {alert('별명을 입력해주세요!');return;}
+if (!apiKey) {alert('API 키를 입력해주세요!');return;}
+if (!apiKey.startsWith('AIzaSy')) {alert('API 키가 올바르지 않습니다!');return;}
+state.userName = name;
+state.apiKey = apiKey;
+document.getElementById('userInfo').textContent = name + '님 환영합니다! 👋';
+document.getElementById('loginSec').classList.add('hidden');
+document.getElementById('mainSec').classList.remove('hidden');
+}
+
+function startDebateRound() {
+let solution = document.getElementById('solutionInput').value.trim();
+if (!solution) {alert('해결 방안을 입력해주세요!');return;}
+state.solutionText = solution;
+state.debateRound = 0;
+state.conversationHistory = [];
+document.getElementById('chatBox').classList.remove('hidden');
+document.getElementById('debateStageBox').classList.remove('hidden');
+document.getElementById('chatInputGroup').classList.remove('hidden');
+document.getElementById('actionBtns').classList.add('hidden');
+document.getElementById('solutionInput').disabled = true;
+document.getElementById('chatBox').innerHTML = '';
+addMessage('ai', `"${solution}"\n\n좋은 생각이네요! 😊`);
+setTimeout(() => generateAI(), 1000);
+}
+
 function sendUserMessage() {
 let text = document.getElementById('chatInput').value.trim();
-
 if (!text || state.isWaiting) return;
-
 addMessage('user', text);
 state.conversationHistory.push({role: 'user', content: text});
 document.getElementById('chatInput').value = '';
-
 state.isWaiting = true;
 setTimeout(() => generateAI(), 500);
 }
@@ -454,27 +362,10 @@ document.getElementById('mainSec').classList.remove('hidden');
 
 function saveConclusion() {
 let text = document.getElementById('conclusionText').value.trim();
-
-if (!text) {
-alert('결론을 입력해주세요!');
-return;
-}
-
-let data = {
-userName: state.userName,
-solution: state.solutionText,
-conclusion: text,
-timestamp: new Date().toISOString(),
-debateRounds: state.debateRound
-};
-
-if (db) {
-db.ref('submissions').push().set(data);
-}
-
+if (!text) {alert('결론을 입력해주세요!');return;}
+let data = {userName: state.userName,solution: state.solutionText,conclusion: text,timestamp: new Date().toISOString(),debateRounds: state.debateRound};
 allSubmissions.push(data);
-localStorage.setItem('submissions', JSON.stringify(allSubmissions));
-
+localStorage.setItem('allSubmissions', JSON.stringify(allSubmissions));
 document.getElementById('viewSolution').textContent = state.solutionText;
 document.getElementById('viewConclusion').textContent = text;
 document.getElementById('conclusionFormSec').classList.add('hidden');
@@ -495,7 +386,6 @@ let csv = 'Name,Solution,Conclusion,Date\n';
 allSubmissions.forEach(s => {
 csv += `"${s.userName}","${s.solution.replace(/"/g, '""')}","${s.conclusion.replace(/"/g, '""')}","${s.timestamp}"\n`;
 });
-
 let blob = new Blob(['\uFEFF' + csv], {type: 'text/csv;charset=utf-8'});
 let link = document.createElement('a');
 link.href = URL.createObjectURL(blob);
@@ -503,13 +393,9 @@ link.download = `토론_${new Date().toISOString().split('T')[0]}.csv`;
 link.click();
 }
 
-// 초기화
-document.getElementById('searchInput').addEventListener('keyup', displayTeacherData);
-document.getElementById('chatInput').addEventListener('keypress', (e) => {
+document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
 if (e.key === 'Enter' && !state.isWaiting) sendUserMessage();
 });
-
-initFirebase();
 </script>
 
 </body>
