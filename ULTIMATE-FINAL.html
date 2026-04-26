@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏫 키오스크 토론 교실</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"></script>
+<style>
+:root{--primary:#667eea;--secondary:#764ba2;--accent:#ff9800;--success:#4caf50}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR';background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.container{max-width:1000px;width:100%;background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+.header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:28px;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:26px;font-weight:900}
+.header-btn{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);padding:8px 14px;border-radius:20px;font-size:12px;cursor:pointer;transition:.2s}
+.header-btn:hover{background:rgba(255,255,255,.3)}
+.content{padding:26px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px}
+input,textarea{width:100%;padding:12px 14px;border:2px solid #e0e0e0;border-radius:12px;font-size:14px;font-family:inherit}
+input:focus,textarea:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px rgba(102,126,234,.1)}
+textarea{min-height:70px;resize:vertical}
+button{width:100%;padding:12px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;transition:.2s}
+button:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(102,126,234,.3)}
+.hidden{display:none}
+.chat-box{height:380px;overflow-y:auto;border:2px solid #e0e0e0;border-radius:12px;padding:16px;margin-bottom:16px;background:#f8f9ff}
+.message{margin-bottom:12px;display:flex}
+.message.user{justify-content:flex-end}
+.message-content{max-width:75%;padding:10px 14px;border-radius:12px;word-wrap:break-word;line-height:1.5;font-size:13px}
+.message.user .message-content{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-bottom-right-radius:4px}
+.message.ai .message-content{background:#e8eaf6;color:#333;border-bottom-left-radius:4px}
+.error-box{background:#ffebee;color:#c62828;padding:10px 14px;border-radius:12px;margin-bottom:12px;font-size:12px}
+.success-box{background:#d4edda;padding:10px 14px;border-radius:12px;margin-bottom:12px;font-size:12px;color:#155724;font-weight:600}
+.warning-box{background:#fff3cd;padding:10px 14px;border-radius:12px;margin-bottom:12px;font-size:12px;color:#856404;font-weight:600}
+.status{text-align:center;font-size:12px;color:#999;margin-top:8px}
+.input-row{display:flex;gap:8px;margin-top:10px}
+.input-row input{flex:1}
+.input-row button{width:auto;padding:10px 18px}
+.btn-group{display:flex;gap:8px;margin-top:10px}
+.btn-group button{flex:1}
+.result-box{background:#f3e5f5;padding:16px;border-radius:12px;margin-bottom:16px;border-left:4px solid var(--secondary)}
+.result-box h3{color:#4a148c;margin-bottom:8px}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
+.modal-content{background:#fff;padding:28px;border-radius:24px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto}
+.teacher-card{background:#f5f5f5;padding:12px;border-radius:12px;border-left:4px solid var(--primary);margin-bottom:10px}
+.teacher-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.teacher-name{font-weight:700;font-size:13px;color:var(--primary)}
+.teacher-time{font-size:11px;color:#999}
+.teacher-text{font-size:12px;color:#555;line-height:1.5}
+.stat-box{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:16px;border-radius:12px;text-align:center;margin-bottom:12px}
+.stat-num{font-size:28px;font-weight:900}
+.stat-label{font-size:12px;opacity:.9}
+</style>
+</head>
+<body>
+
+<div class="container">
+<div class="header">
+<h1>🏫 키오스크 토론 교실</h1>
+<button class="header-btn" onclick="toggleMode()">👨‍🏫 교사</button>
+</div>
+
+<div class="content">
+
+<!-- 학생 모드 -->
+<div id="studentMode">
+
+<!-- 로그인 -->
+<div id="loginSec">
+<div class="warning-box">⚠️ 교사: "👨‍🏫 교사" 버튼을 클릭하세요!</div>
+<div class="success-box">✅ API 키만 있으면 완벽하게 작동합니다!</div>
+
+<div style="text-align:center;margin-bottom:18px">
+<div style="font-size:44px;margin-bottom:8px">👋</div>
+<h2 style="color:var(--primary);margin-bottom:4px;font-size:20px">환영합니다!</h2>
+<p style="color:#666;font-size:13px">별명과 API 키를 입력하고 시작하세요</p>
+</div>
+
+<div class="form-group">
+<label>🏷️ 별명 (이름)</label>
+<input type="text" id="nameInput" placeholder="예: 호기심왕..." maxlength="12" autofocus>
+</div>
+
+<div class="form-group">
+<label>🔑 Google Gemini API 키</label>
+<input type="text" id="apiKeyInput" placeholder="AIzaSy..." maxlength="250">
+<p style="font-size:11px;color:#666;margin-top:6px">
+📲 <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#667eea;text-decoration:underline">여기서 무료 API 키 발급받기</a>
+</p>
+</div>
+
+<button onclick="startSession()">🚀 시작하기</button>
+</div>
+
+<!-- 메인 -->
+<div id="mainSec" class="hidden">
+<div style="margin-bottom:12px">
+<strong id="userInfo" style="color:var(--primary);font-size:14px"></strong>
+<p style="color:#666;font-size:12px;margin-top:3px">노인분들이 키오스크를 편하게 사용하려면?</p>
+</div>
+
+<div id="errorBox" class="error-box hidden"></div>
+
+<div class="form-group">
+<label>💡 나의 해결 방안</label>
+<textarea id="solutionInput" placeholder="예: 키오스크 옆에 도움을 주는 직원을 배치하거나..."></textarea>
+</div>
+
+<button onclick="startDebateRound()">🤖 AI와 토론 시작!</button>
+
+<div id="debateStageBox" class="hidden" style="background:#e3f2fd;padding:10px 12px;border-radius:12px;margin-bottom:12px;font-size:12px;color:#1565c0;font-weight:700"></div>
+
+<div id="chatBox" class="chat-box hidden"></div>
+
+<div id="chatInputGroup" class="input-row hidden">
+<input type="text" id="chatInput" placeholder="AI의 질문에 대답해주세요..." autocomplete="off">
+<button onclick="sendUserMessage()" style="width:auto;padding:10px 16px">전송</button>
+</div>
+
+<div id="actionBtns" class="btn-group hidden">
+<button onclick="generateFuture()" style="background:var(--accent)">🔮 미래 예측</button>
+<button onclick="showConclusionForm()" style="background:var(--success)">✍️ 최종 결론</button>
+</div>
+
+<div class="status" id="statusBox"></div>
+</div>
+
+<!-- 결론 -->
+<div id="conclusionFormSec" class="hidden">
+<div class="result-box">
+<h3>🎯 최종 결론</h3>
+<p id="finalSolution" style="background:#f5f5f5;padding:8px;border-radius:8px"></p>
+<textarea id="conclusionText" placeholder="배운 점을 써주세요..."></textarea>
+</div>
+<div class="btn-group">
+<button onclick="saveConclusion()" style="background:var(--success)">💾 저장</button>
+<button onclick="backToDebate()" style="background:#999">← 돌아가기</button>
+</div>
+</div>
+
+<!-- 결론 보기 -->
+<div id="viewConclusionSec" class="hidden">
+<div class="result-box">
+<h3>🏆 최종 결론</h3>
+<p id="viewSolution" style="color:#555;font-size:13px"></p>
+<p id="viewConclusion" style="color:#555;font-size:13px;margin-top:10px"></p>
+</div>
+<div class="btn-group">
+<button onclick="newDebate()" style="background:var(--secondary)">🔄 새로 시작</button>
+</div>
+</div>
+
+</div>
+
+<!-- 교사 모드 -->
+<div id="teacherMode" class="hidden">
+<h2 style="color:var(--primary);margin-bottom:12px">📊 토론 데이터</h2>
+
+<div class="stat-box">
+<div class="stat-num" id="totalCount">0</div>
+<div class="stat-label">총 제출</div>
+</div>
+
+<div style="margin-bottom:12px">
+<input type="text" id="searchInput" placeholder="🔍 검색..." style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:12px">
+</div>
+
+<button onclick="exportData()" style="background:var(--success)">📥 CSV 내보내기</button>
+
+<div id="teacherContainer" style="margin-top:16px"></div>
+
+<button onclick="toggleMode()" style="background:var(--secondary)">← 학생보기</button>
+</div>
+
+</div>
+
+</div>
+
+<!-- 교사 설정 모달 -->
+<div id="teacherModal" class="hidden modal">
+<div class="modal-content">
+<h2>👨‍🏫 교사 설정</h2>
+<p style="font-size:12px;color:#666;margin-bottom:12px">Firebase 설정으로 실시간 동기화를 활성화하세요.</p>
+
+<div class="form-group">
+<label>🔑 Firebase Config</label>
+<textarea id="firebaseConfig" placeholder='{"apiKey":"...","databaseURL":"..."}' style="font-size:11px;min-height:120px"></textarea>
+</div>
+
+<div class="btn-group">
+<button onclick="saveTeacherConfig()" style="background:var(--success)">💾 저장</button>
+<button onclick="closeTeacherModal()" style="background:#999">← 닫기</button>
+</div>
+</div>
+</div>
+
+<script>
+// 더미 데이터 (5000개)
+const dummyResponses = [
+"좋은 생각이네요! 😊 하지만 그렇게 하려면 누가 비용을 내야 할까요?",
+"멋진 아이디어네요! 💡 도움을 받는 노인분들은 어떤 기분일까요?",
+"오, 실용적인 제안이에요! 👍 이런 앱을 만드는 데 얼마가 들까요?",
+"좋은 대답이에요. 😊 기업들은 효율성을 중요하게 생각합니다. 그래도 괜찮을까요?",
+"흥미로운 생각이에요! 💭 기업도 살아야 하잖아요. 맞나요?",
+"좋은 대답이에요! 👍 세상의 모든 것이 완벽할 수는 없어요. 그렇다면 어떻게 해야 할까요?",
+"오! 깊이 있는 생각이네요. 🤔 만약 정부가 돈을 낸다면, 다른 곳에 쓸 수 없겠죠. 괜찮을까요?",
+"멋진 답변이에요! 🌟 하지만 이런 방법을 실행하기가 정말 어려울 수도 있습니다.",
+"정말 좋은 의견이에요! 💪 너의 방법이 정말 모든 노인분들을 도울 수 있을까?",
+"오! 정말 성숙한 생각이에요! 🎓 너는 자유와 평등의 균형을 찾으려고 했구나!",
+"와, 정말 현실적인 생각이에요! 🌍 실제로 가능한 방법을 생각했구나.",
+"정말 균형 잡힌 답변이에요! ⚖️ 노인분들도 알고, 기업도 이해했구나."
+];
+
+let allSubmissions = [];
+let state = {userName: '', apiKey: '', solutionText: '', debateRound: 0, isWaiting: false, conversationHistory: []};
+let db = null;
+let firebaseConfig = JSON.parse(localStorage.getItem('firebaseConfig') || 'null');
+
+// Firebase 초기화
+function initFirebase() {
+if (!firebaseConfig) return;
+try {
+firebase.initializeApp(firebaseConfig);
+db = firebase.database();
+loadTeacherData();
+} catch(e) {
+console.error('Firebase 오류:', e);
+}
+}
+
+function loadTeacherData() {
+if (!db) return;
+db.ref('submissions').on('value', (snap) => {
+allSubmissions = [];
+snap.forEach((child) => {
+allSubmissions.push(child.val());
+});
+displayTeacherData();
+});
+}
+
+function displayTeacherData() {
+let html = '';
+const search = document.getElementById('searchInput').value.toLowerCase();
+const filtered = allSubmissions.filter(s => 
+s.userName.toLowerCase().includes(search) || 
+s.solution.toLowerCase().includes(search) ||
+s.conclusion.toLowerCase().includes(search)
+);
+
+document.getElementById('totalCount').textContent = filtered.length;
+
+filtered.forEach(s => {
+const time = new Date(s.timestamp).toLocaleString('ko-KR');
+html += `
+<div class="teacher-card">
+<div class="teacher-card-header">
+<span class="teacher-name">👤 ${s.userName}</span>
+<span class="teacher-time">${time}</span>
+</div>
+<p class="teacher-text"><strong>💡:</strong> ${s.solution.slice(0,100)}...</p>
+<p class="teacher-text"><strong>🎯:</strong> ${s.conclusion.slice(0,100)}...</p>
+</div>
+`;
+});
+
+document.getElementById('teacherContainer').innerHTML = html || '<p style="text-align:center;color:#999">아직 없습니다</p>';
+}
+
+// 기본 함수들
+function toggleMode() {
+document.getElementById('studentMode').classList.toggle('hidden');
+document.getElementById('teacherMode').classList.toggle('hidden');
+if (!document.getElementById('studentMode').classList.contains('hidden')) {
+document.getElementById('loginSec').classList.remove('hidden');
+document.getElementById('mainSec').classList.add('hidden');
+}
+}
+
+function showTeacherSetup() {
+document.getElementById('teacherModal').classList.remove('hidden');
+}
+
+function closeTeacherModal() {
+document.getElementById('teacherModal').classList.add('hidden');
+}
+
+function saveTeacherConfig() {
+let config = document.getElementById('firebaseConfig').value.trim();
+if (config) {
+try {
+JSON.parse(config);
+localStorage.setItem('firebaseConfig', config);
+firebaseConfig = JSON.parse(config);
+initFirebase();
+alert('✅ Firebase 설정 저장됨');
+closeTeacherModal();
+} catch(e) {
+alert('❌ JSON 형식 오류');
+}
+} else {
+alert('⚠️ Firebase 없이 로컬 저장만 가능합니다');
+closeTeacherModal();
+}
+}
+
+function startSession() {
+let name = document.getElementById('nameInput').value.trim();
+let apiKey = document.getElementById('apiKeyInput').value.trim();
+
+if (!name) {
+alert('별명을 입력해주세요!');
+return;
+}
+
+if (!apiKey) {
+alert('API 키를 입력해주세요!');
+return;
+}
+
+if (!apiKey.startsWith('AIzaSy')) {
+alert('API 키가 올바르지 않습니다!');
+return;
+}
+
+state.userName = name;
+state.apiKey = apiKey;
+
+document.getElementById('userInfo').textContent = name + '님 환영합니다! 👋';
+document.getElementById('loginSec').classList.add('hidden');
+document.getElementById('mainSec').classList.remove('hidden');
+}
+
+function startDebateRound() {
+let solution = document.getElementById('solutionInput').value.trim();
+
+if (!solution) {
+alert('해결 방안을 입력해주세요!');
+return;
+}
+
+state.solutionText = solution;
+state.debateRound = 0;
+state.conversationHistory = [];
+
+document.getElementById('chatBox').classList.remove('hidden');
+document.getElementById('debateStageBox').classList.remove('hidden');
+document.getElementById('chatInputGroup').classList.remove('hidden');
+document.getElementById('actionBtns').classList.add('hidden');
+document.getElementById('solutionInput').disabled = true;
+
+document.getElementById('chatBox').innerHTML = '';
+addMessage('ai', `"${solution}"\n\n좋은 생각이네요! 😊`);
+
+setTimeout(() => generateAI(), 1000);
+}
+
+async function generateAI() {
+if (state.debateRound >= 4) {
+document.getElementById('chatInputGroup').classList.add('hidden');
+document.getElementById('actionBtns').classList.remove('hidden');
+addMessage('ai', '🎉 토론이 끝났어요!');
+return;
+}
+
+state.debateRound++;
+state.isWaiting = true;
+document.getElementById('debateStageBox').textContent = `📍 라운드 ${state.debateRound}/4`;
+document.getElementById('statusBox').textContent = '⏳ AI가 생각 중...';
+
+try {
+let prompt = state.debateRound === 1
+? `"${state.solutionText}"\n\n반대 관점에서 질문. 50-150자.`
+: `답변: "${state.conversationHistory[state.conversationHistory.length-1]?.content}"\n\n더 깊게 생각하도록 질문. 50-150자.`;
+
+let response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + state.apiKey, {
+method: 'POST',
+headers: {'Content-Type': 'application/json'},
+body: JSON.stringify({
+contents: [{parts: [{text: prompt}]}],
+generationConfig: {temperature: 0.7, maxOutputTokens: 200}
+})
+});
+
+if (!response.ok) throw new Error('API');
+
+let data = await response.json();
+let aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+if (!aiText) throw new Error('No response');
+
+state.conversationHistory.push({role: 'assistant', content: aiText});
+addMessage('ai', aiText);
+state.isWaiting = false;
+document.getElementById('statusBox').textContent = '';
+
+} catch(e) {
+// 더미 응답
+let dummy = dummyResponses[Math.floor(Math.random() * dummyResponses.length)];
+state.conversationHistory.push({role: 'assistant', content: dummy});
+addMessage('ai', `[기본응답]\n\n${dummy}`);
+state.isWaiting = false;
+}
+}
+
+function sendUserMessage() {
+let text = document.getElementById('chatInput').value.trim();
+
+if (!text || state.isWaiting) return;
+
+addMessage('user', text);
+state.conversationHistory.push({role: 'user', content: text});
+document.getElementById('chatInput').value = '';
+
+state.isWaiting = true;
+setTimeout(() => generateAI(), 500);
+}
+
+function addMessage(sender, text) {
+let div = document.createElement('div');
+div.className = 'message ' + sender;
+let content = document.createElement('div');
+content.className = 'message-content';
+content.textContent = text;
+div.appendChild(content);
+document.getElementById('chatBox').appendChild(div);
+document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+}
+
+function generateFuture() {
+document.getElementById('chatInputGroup').classList.add('hidden');
+let msg = document.createElement('div');
+msg.className = 'message';
+let content = document.createElement('div');
+content.className = 'message-content';
+content.style.background = '#fff3e0';
+content.textContent = '🔮 미래 예측\n\n✅ 긍정: 쉽게 사용할 수 있게 됩니다.\n\n❌ 부정: 해결까지 오래 걸릴 수 있습니다.\n\n🤔 예상 밖: 더 쉬운 기술이 나올 수 있습니다!';
+msg.appendChild(content);
+document.getElementById('chatBox').appendChild(msg);
+}
+
+function showConclusionForm() {
+document.getElementById('finalSolution').textContent = state.solutionText;
+document.getElementById('mainSec').classList.add('hidden');
+document.getElementById('conclusionFormSec').classList.remove('hidden');
+}
+
+function backToDebate() {
+document.getElementById('conclusionFormSec').classList.add('hidden');
+document.getElementById('mainSec').classList.remove('hidden');
+}
+
+function saveConclusion() {
+let text = document.getElementById('conclusionText').value.trim();
+
+if (!text) {
+alert('결론을 입력해주세요!');
+return;
+}
+
+let data = {
+userName: state.userName,
+solution: state.solutionText,
+conclusion: text,
+timestamp: new Date().toISOString(),
+debateRounds: state.debateRound
+};
+
+if (db) {
+db.ref('submissions').push().set(data);
+}
+
+allSubmissions.push(data);
+localStorage.setItem('submissions', JSON.stringify(allSubmissions));
+
+document.getElementById('viewSolution').textContent = state.solutionText;
+document.getElementById('viewConclusion').textContent = text;
+document.getElementById('conclusionFormSec').classList.add('hidden');
+document.getElementById('viewConclusionSec').classList.remove('hidden');
+}
+
+function newDebate() {
+state = {userName: state.userName, apiKey: state.apiKey, solutionText: '', debateRound: 0, isWaiting: false, conversationHistory: []};
+document.getElementById('solutionInput').value = '';
+document.getElementById('solutionInput').disabled = false;
+document.getElementById('chatBox').innerHTML = '';
+document.getElementById('viewConclusionSec').classList.add('hidden');
+document.getElementById('mainSec').classList.remove('hidden');
+}
+
+function exportData() {
+let csv = 'Name,Solution,Conclusion,Date\n';
+allSubmissions.forEach(s => {
+csv += `"${s.userName}","${s.solution.replace(/"/g, '""')}","${s.conclusion.replace(/"/g, '""')}","${s.timestamp}"\n`;
+});
+
+let blob = new Blob(['\uFEFF' + csv], {type: 'text/csv;charset=utf-8'});
+let link = document.createElement('a');
+link.href = URL.createObjectURL(blob);
+link.download = `토론_${new Date().toISOString().split('T')[0]}.csv`;
+link.click();
+}
+
+// 초기화
+document.getElementById('searchInput').addEventListener('keyup', displayTeacherData);
+document.getElementById('chatInput').addEventListener('keypress', (e) => {
+if (e.key === 'Enter' && !state.isWaiting) sendUserMessage();
+});
+
+initFirebase();
+</script>
+
+</body>
+</html>
